@@ -1,18 +1,16 @@
 const usersRepo = require("../repo/users");
+const resHelper = require("../helpers/sendResponse");
 
-const create = async (req, res) => {
-    try {
-      const { body } = req;
-      const response = await usersRepo.createUsers(body);
-      res.status(201).json({
-        msg: "user created",
-        data: response.rows,
-      });
-    } catch (error) {
-      return res.status(error.status).json({ msg: error.message ,  });
-    }
-  };
+const register = async (req, res) => {
+  try {
+    const { body } = req;
+    const response = await usersRepo.register(body);
+    resHelper.success(res, response.status, response);
+  } catch (error) {
+    resHelper.error(res, error.status, error);
+  }
+};
 
-  const usersController = {create}
+const usersController = { register};
 
-  module.exports = usersController;
+module.exports = usersController;
