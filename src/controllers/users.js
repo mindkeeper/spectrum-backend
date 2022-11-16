@@ -1,7 +1,7 @@
 const usersRepo = require("../repo/users");
 const resHelper = require("../helpers/sendResponse");
 
-const create = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { body } = req;
     const response = await usersRepo.register(body);
@@ -11,6 +11,6 @@ const create = async (req, res) => {
   }
 };
 
-const usersController = { create };
+const usersController = { register};
 
 module.exports = usersController;
