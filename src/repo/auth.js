@@ -172,7 +172,7 @@ const checkWhitelistToken = (token) => {
     postgreDb.query(query, [token], (error, result) => {
       if (error) {
         console.log(error);
-        return reject(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
       }
       resolve(result);
     });
