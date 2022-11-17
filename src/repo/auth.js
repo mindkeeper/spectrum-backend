@@ -2,7 +2,6 @@ const postgreDb = require("../config/postgre");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { token } = require("morgan");
-const users = require("../repo/users");
 const response = require("../helpers/sendResponse")
 const resHelper = require("../helpers/sendResponse");
 
@@ -67,7 +66,7 @@ const login = (body) => {
                   id: payload.user_id,
                   roles_id: payload.roles_id,
                 },
-                users.insertWhitelistToken(token)
+                insertWhitelistToken(token)
                 );
               }, 
             );
@@ -82,7 +81,7 @@ const logout = async (req, res) => {
   try {
     const token = req.header("x-access-token");
     console.log(token);
-    await users.deleteWhitelistToken(token);
+    await deleteWhitelistToken(token);
     // response(res, { status: 200, message: "Logout success" });
     resHelper.success(res, response.status, response);
   } catch (error) {
@@ -97,10 +96,54 @@ const logout = async (req, res) => {
   }
 }
 
+const insertWhitelistToken = (token) => {
+  return new Promise((resolve, reject) => {
+    const query = "insert into whitelist_token (token) values ($1) ";
+    postgreDb.query(query, [token], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject(error);
+      }
+      resolve(result);
+    });
+  });
+};
+
+const deleteWhitelistToken = (token) => {
+  return new Promise((resolve, reject) => {
+    const query = "delete from whitelist_token where token = $1";
+    postgreDb.query(query, [token], (error, result) => {
+      if (error) {
+        console.log(query);
+        console.log(error);
+        return reject(error);
+      }
+      console.log(query);
+      resolve(result);
+    });
+  });
+};
+
+const checkWhitelistToken = (token) => {
+  return new Promise((resolve, reject) => {
+    const query = "select * from whitelist_token where token = $1";
+    postgreDb.query(query, [token], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject(error);
+      }
+      resolve(result);
+    });
+  });
+};
+
 
 const authRepo = {
   login,
-  logout
+  logout,
+  insertWhitelistToken,
+  deleteWhitelistToken,
+  checkWhitelistToken
 };
 
 module.exports = authRepo;
