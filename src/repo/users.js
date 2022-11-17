@@ -103,14 +103,48 @@ const checkWhitelistToken = (token) => {
   });
 };
 
-
-
+const getProfileId = (payload) => {
+  return new Promise((resolve, reject) => {
+    const { roles_id, user_id } = payload;
+    if (parseInt(roles_id) === 1) {
+      const query =
+        "select display_name,address,gender,images from customers where users_id = $1 and deleted_at = null";
+      postgreDB.query(query, [user_id], (error, result) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal Server Error" });
+        }
+        resolve({
+          status: 201,
+          msg: "Your account created successfully",
+          data: { ...result.rows[0] },
+        });
+      });
+    }
+    if (parseInt(roles_id) === 2) {
+      const query =
+        "select display_name,address,gender,images,store_name,store_desc from sellers where users_id = $1 and deleted_at = null";
+      postgreDB.query(query, [user_id], (error, result) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal Server Error" });
+        }
+        resolve({
+          status: 201,
+          msg: "Your account created successfully",
+          data: { ...result.rows[0] },
+        });
+      });
+    }
+  });
+};
 
 const usersRepo = {
   register,
   insertWhitelistToken,
   deleteWhitelistToken,
-  checkWhitelistToken
+  checkWhitelistToken,
+  getProfileId,
 };
 
 module.exports = usersRepo;
