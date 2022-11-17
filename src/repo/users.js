@@ -65,25 +65,26 @@ const register = (body) => {
 const getProfileId = (payload) => {
   return new Promise((resolve, reject) => {
     const { roles_id, user_id } = payload;
-    let query = ""
-    if (parseInt(roles_id) === 1) {
-      return query =
-        "select users.email,users.username,roles.role,customers.display_name,customers.address,customers.gender,customers.images from users inner join roles on users.roles_id = roles.id inner join customers users.id = customers.user_id where costumers.users_id = $1 and customers.deleted_at = null";
+    let query = "";
+    if (roles_id === 1) {
+      query =
+        "select users.email,users.username, roles.role ,customers.display_name,customers.address,customers.gender,customers.image from users inner join roles on users.roles_id = roles.id inner join customers on users.id = customers.user_id where users.id = $1 and customers.deleted_at = null";
     }
     if (parseInt(roles_id) === 2) {
-      return query =
-        "select users.email,users.username,roles.role,sellers.display_name,sellers.address,gender,sellers.images,sellers.store_name,sellers.store_desc from users full join roles on users.roles_id = roles.id full join sellers on users.id = sellers.user_id where sellers.users_id = $1 and users.deleted_at = null";
-      }
-        postgreDB.query(query, [user_id], (error, result) => {
-          if (error) {
-            console.log(error);
-            return reject({ status: 500, msg: "Internal Server Error" });
-          }
-          resolve({ status: 201,
-            data: { ...result.rows[0] },}
-           )
-      })});
+      query =
+        "select users.email,users.username, roles.role ,sellers.display_name,sellers.address,sellers.gender,sellers.image,sellers.store_name,sellers.store_desc from users inner join roles on users.roles_id = roles.id inner join customers on users.id = sellers.user_id where users.id = $1 and sellers.deleted_at = null";
     }
+    console.log(roles_id);
+    postgreDB.query(query, [user_id], (error, result) => {
+      console.log(result)
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      resolve({ status: 201, data: result.rows });
+    });
+  });
+};
 
 const usersRepo = {
   register,

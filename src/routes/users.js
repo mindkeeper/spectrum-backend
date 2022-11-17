@@ -8,6 +8,6 @@ const { register, Profile } = require("../controllers/users");
 
 users.post("/register", register);
 
-users.get("/profile", isLogin(), Profile);
+users.get("/profile", isLogin, Profile);
 
 module.exports = users;
