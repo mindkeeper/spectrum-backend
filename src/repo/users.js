@@ -87,7 +87,7 @@ const getProfile = (id, role) => {
   });
 };
 
-const editProfile = (id, body, file) => {
+const editProfile = (id, role, body, file) => {
   return new Promise((resolve, reject) => {
     // const { display_name, gender, address, image } = body;
     // let query = "update customers set ";
@@ -104,15 +104,17 @@ const editProfile = (id, body, file) => {
     //   } else {
     //     if (file && file.fieldname == "image") {
     //       query += `image = '${imageUrl}',`;
-          
+
     //     }
     //   }
     // }
 
- 
     const timeStamp = Date.now() / 1000;
     const values = [];
-    let query = "update customers set ";
+    let query = "";
+    if (parseInt(role) === 1) query = "update customers set ";
+    if (parseInt(role) === 2) query = "update sellers set ";
+
     let imageUrl = "";
     if (file) {
       imageUrl = `${file.url} `;
@@ -127,7 +129,7 @@ const editProfile = (id, body, file) => {
 
     Object.keys(body).forEach((key, idx, array) => {
       if (idx === array.length - 1) {
-        query += ` ${key} = $${idx + 1} where id = $${idx + 2}`;
+        query += ` ${key} = $${idx + 1} where user_id = $${idx + 2}`;
         values.push(body[key], id);
         return;
       }
@@ -140,13 +142,15 @@ const editProfile = (id, body, file) => {
         return reject({ status: 500, msg: "Internal Server Error" });
       }
       console.log(values, query);
+      console.log(result);
       let data = {};
       if (file) data = { Image: imageUrl, ...result.rows[0] };
       data = { Image: imageUrl, ...result.rows[0] };
       return resolve({
         status: 200,
-        msg: `${result.rows[0].display_name}, your profile successfully updated`,
+        msg: `${result.rows[0]}, your profile successfully updated`,
         data,
+        
       });
     });
   });
@@ -195,13 +199,13 @@ const updateUser = (id, body, file) => {
       });
     });
   });
-}
+};
 
 const usersRepo = {
   register,
   getProfile,
   editProfile,
-  updateUser
+  updateUser,
 };
 
 module.exports = usersRepo;
