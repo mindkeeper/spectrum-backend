@@ -62,55 +62,14 @@ const register = (body) => {
   });
 };
 
-const insertWhitelistToken = (token) => {
-  return new Promise((resolve, reject) => {
-    const query = "insert into whitelist_token (token) values ($1) ";
-    postgreDB.query(query, [token], (error, result) => {
-      if (error) {
-        console.log(error);
-        return reject(error);
-      }
-      resolve(result);
-    });
-  });
-};
 
-const deleteWhitelistToken = (token) => {
-  return new Promise((resolve, reject) => {
-    const query = "delete from whitelist_token where token = $1";
-    postgreDB.query(query, [token], (error, result) => {
-      if (error) {
-        console.log(query);
-        console.log(error);
-        return reject(error);
-      }
-      console.log(query);
-      resolve(result);
-    });
-  });
-};
-
-const checkWhitelistToken = (token) => {
-  return new Promise((resolve, reject) => {
-    const query = "select * from whitelist_token where token = $1";
-    postgreDB.query(query, [token], (error, result) => {
-      if (error) {
-        console.log(error);
-        return reject(error);
-      }
-      resolve(result);
-    });
-  });
-};
 
 
 
 
 const usersRepo = {
   register,
-  insertWhitelistToken,
-  deleteWhitelistToken,
-  checkWhitelistToken
+  
 };
 
 module.exports = usersRepo;
