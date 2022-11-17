@@ -11,10 +11,19 @@ const register = async (req, res) => {
   }
 };
 
-
+const Profile = async (req, res) => {
+  try {
+    const { userPayload } = req;
+    const response = await usersRepo.getProfileId(userPayload);
+    resHelper.success(res, response.status, response);
+  } catch (error) {
+    resHelper.error(res, error.status, error);
+  }
+};
 
 const usersController = { 
   register,
+  Profile,
  
 };
 

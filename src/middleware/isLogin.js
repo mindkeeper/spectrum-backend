@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken")
 // const response = require("../helpers/response")
 const resHelper = require("../helpers/sendResponse");
 
-const isLogins = async (req, res, next) => {
+const isLogin = async (req, res, next) => {
         const token = req.header("x-access-token")
         if (!token) return res.status(401).json({msg: "You have to please login firsts!", data : null}) 
         const checkToken = await checkWhitelistToken(token);
@@ -28,6 +28,6 @@ const isLogins = async (req, res, next) => {
         } )
     }
 
-    module.exports = { isLogins };
+    module.exports =  isLogin ;
 
 
