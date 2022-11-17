@@ -80,7 +80,6 @@ const getProfileId = (payload) => {
             return reject({ status: 500, msg: "Internal Server Error" });
           }
           resolve({ status: 201,
-            msg: "Your account created successfully",
             data: { ...result.rows[0] },}
            )
       })});
