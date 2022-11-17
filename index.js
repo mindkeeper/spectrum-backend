@@ -3,11 +3,10 @@ const morgan = require("morgan");
 require("dotenv").config();
 
 const { PORT } = process.env;
-// const db = require("./src/config/postgre");
 const mainRouter = require("./src/routes/main");
 const server = express();
 const cors = require("cors");
-// require("./src/config/redis");
+require("./src/config/redis");
 
 server.use(cors());
 server.use(express.json());
