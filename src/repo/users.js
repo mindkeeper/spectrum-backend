@@ -65,6 +65,7 @@ const register = (body) => {
 const getProfile = (id, role) => {
   return new Promise((resolve, reject) => {
     let query = "";
+    console.log(id);
     if (parseInt(role) === 1)
       query =
         "select c.display_name, c.gender, c.address, c.image, u.email, r.role from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
@@ -86,9 +87,121 @@ const getProfile = (id, role) => {
   });
 };
 
+const editProfile = (id, body, file) => {
+  return new Promise((resolve, reject) => {
+    // const { display_name, gender, address, image } = body;
+    // let query = "update customers set ";
+    // const values = [];
+    // console.log(id);
+    // if (file) {
+    //   const imageUrl = `${file.url}`;
+
+    //   if (!display_name && !gender && !address) {
+    //     if (file && file.fieldname == "imageUrl") {
+    //       query += `image = '${imageUrl}' where user_id = $1 returning display_name`;
+    //       values.push(id);
+    //     }
+    //   } else {
+    //     if (file && file.fieldname == "image") {
+    //       query += `image = '${imageUrl}',`;
+          
+    //     }
+    //   }
+    // }
+
+ 
+    const timeStamp = Date.now() / 1000;
+    const values = [];
+    let query = "update customers set ";
+    let imageUrl = "";
+    if (file) {
+      imageUrl = `${file.url} `;
+      if (Object.keys(body).length > 0) {
+        query += `image = '${imageUrl}', `;
+      }
+      if (Object.keys(body).length === 0) {
+        query += `image = '${imageUrl}', updated_at = to_timestamp($1) where user_id = $2 returning display_name`;
+        values.push(timeStamp, id);
+      }
+    }
+
+    Object.keys(body).forEach((key, idx, array) => {
+      if (idx === array.length - 1) {
+        query += ` ${key} = $${idx + 1} where id = $${idx + 2}`;
+        values.push(body[key], id);
+        return;
+      }
+      query += `${key} = $${idx + 1},`;
+      values.push(body[key]);
+    });
+    postgreDB.query(query, values, (err, result) => {
+      if (err) {
+        console.log(query, values, file);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      console.log(values, query);
+      let data = {};
+      if (file) data = { Image: imageUrl, ...result.rows[0] };
+      data = { Image: imageUrl, ...result.rows[0] };
+      return resolve({
+        status: 200,
+        msg: `${result.rows[0].display_name}, your profile successfully updated`,
+        data,
+      });
+    });
+  });
+};
+
+const updateUser = (id, body, file) => {
+  return new Promise((resolve, reject) => {
+    const timeStamp = Date.now() / 1000;
+    const values = [];
+    let query = "update customers set ";
+    let imageUrl = "";
+    if (file) {
+      imageUrl = `${file.url} `;
+      if (Object.keys(body).length > 0) {
+        query += `image = '${imageUrl}', `;
+      }
+      if (Object.keys(body).length === 0) {
+        query += `image = '${imageUrl}', updated_at = to_timestamp($1) where user_id = $2 returning display_name`;
+        values.push(timeStamp, id);
+      }
+    }
+    Object.keys(body).forEach((key, index, array) => {
+      if (index === array.length - 1) {
+        query += `${key} = $${index + 1}, updated_at = to_timestamp($${
+          index + 2
+        }) where user_id = $${index + 3} returning display_name`;
+        values.push(body[key], timeStamp, id);
+        return;
+      }
+      query += `${key} = $${index + 1}, `;
+      values.push(body[key]);
+    });
+    console.log(query);
+    db.query(query, values, (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      let data = {};
+      if (file) data = { Image: imageUrl, ...result.rows[0] };
+      data = { Image: imageUrl, ...result.rows[0] };
+      return resolve({
+        status: 200,
+        msg: `${result.rows[0].display_name}, your profile successfully updated`,
+        data,
+      });
+    });
+  });
+}
+
 const usersRepo = {
   register,
   getProfile,
+  editProfile,
+  updateUser
 };
 
 module.exports = usersRepo;
