@@ -6,6 +6,6 @@ const { register } = require("../controllers/users");
 const { login } = require("../repo/auth");
 
 users.post("/register", register);
-users.post("/login", login)
+// users.post("/login", login)
 
 module.exports = users;

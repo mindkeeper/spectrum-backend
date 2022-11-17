@@ -4,14 +4,15 @@ const jwt = require("jsonwebtoken");
 const { token } = require("morgan");
 const users = require("../repo/users");
 const response = require("../helpers/sendResponse")
+const resHelper = require("../helpers/sendResponse");
 
-// otentikasi
+
 const login = (body) => {
     return new Promise((resolve, reject) => {
       const { email, password } = body;
-      // cek apa ada email yg diinput di db
+     
       const getPasswordByEmailQuery =
-        "select id, name, password, role from users where email = $1";
+        "select id, email, password, roles_id from users where email = $1";
       const getPasswordByEmailValues = [email];
       postgreDb.query(
         getPasswordByEmailQuery,
@@ -19,14 +20,16 @@ const login = (body) => {
         (err, response) => {
           if (err) {
             console.error(err);
+        
             return reject({ err });
+            
           }
           if (response.rows.length === 0)
             return reject({
               err: new Error("Email or password is wrong"),
               statuscode: 401,
             });
-          // cek pw di db sama dgn yg diinput
+         
           const hashedPassword = response.rows[0].password;
           bcrypt.compare(password, hashedPassword, (err, isSame) => {
             if (err) {
@@ -38,12 +41,12 @@ const login = (body) => {
                 err: new Error("Email or password is wrong"),
                 statusCode: 401,
               });
-            // proses login jika cocok, create jwt => return jwt to user
+           
             const payload = {
               user_id: response.rows[0].id,
-              name: response.rows[0].name,
+              email: response.rows[0].email,
               email,
-              role: response.rows[0].role,
+              roles_id: response.rows[0].roles_id,
             };
             const token = jwt.sign(
               payload,
@@ -52,7 +55,6 @@ const login = (body) => {
                 expiresIn: "60m",
                 issuer: process.env.issuer,
               },        
-                // users.insertWhitelistToken(token)
               (err, token) => {
                 if (err) {
                   console.error(err);
@@ -61,9 +63,9 @@ const login = (body) => {
                 return resolve(
                   { 
                   token,
-                  name: payload.name,
+                  email: payload.email,
                   id: payload.user_id,
-                  role: payload.role,
+                  roles_id: payload.roles_id,
                 },
                 users.insertWhitelistToken(token)
                 );
@@ -76,26 +78,29 @@ const login = (body) => {
     });
   };
 
-// const logout = async (req, res) => {
-//   try {
-//     const token = req.header("x-access-token");
-//     console.log(token);
-//     users.deleteWhitelistToken(token);
-//     response(res, { status: 200, message: "Logout success" });
-//   } catch (error) {
-//     console.log(error);
-//     return response(res, {
-//       error,
-//       status: 500,
-//       message: "Internal server error",
-//     });
-//   }
-// }
+const logout = async (req, res) => {
+  try {
+    const token = req.header("x-access-token");
+    console.log(token);
+    await users.deleteWhitelistToken(token);
+    // response(res, { status: 200, message: "Logout success" });
+    resHelper.success(res, response.status, response);
+  } catch (error) {
+    console.log(error);
+    // return response(res, {
+    //   error,
+    //   status: 500,
+    //   message: "Internal server error",
+    // });
+    res.status(500).json({error, msg: "internal server error" });
+    // resHelper.error(res, error.status, error);
+  }
+}
 
 
 const authRepo = {
   login,
-//   logout
+  logout
 };
 
 module.exports = authRepo;

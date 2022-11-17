@@ -11,7 +11,9 @@ const sendResponse = {
   error: (res, status, error) => {
     return res
       .status(status)
-      .json({ status, msg: error.msg, data: error.data || null });
+      .json({ status, 
+        msg: error.msg, 
+        data: error.data || null });
   },
 };
 module.exports = sendResponse;
