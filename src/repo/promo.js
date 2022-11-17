@@ -25,7 +25,50 @@ const addPromo = (body) => {
   });
 };
 
+const getAllPromo = () => {
+  return new Promise((resolve, reject) => {
+    const query = "select * from promo";
+    postgreDB.query(query, (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      return resolve({
+        status: 201,
+        msg: "this is promo",
+        data: { ...result.rows },
+      });
+    });
+  });
+};
+
+const getPromoCode = (code) => {
+  return new Promise((resolve, reject) => {
+    const upsize = code.toUpperCase();
+    const query = "select * from promo where promo.code = $1";
+    postgreDB.query(query, [upsize], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (result.rows.length === 0) {
+        return reject({
+          status: 200,
+          msg: "promo not found",
+        });
+      }
+      return resolve({
+        status: 200,
+        msg: "this is promo",
+        data: { ...result.rows[0] },
+      });
+    });
+  });
+};
+
 const promoRepo = {
   addPromo,
+  getAllPromo,
+  getPromoCode,
 };
 module.exports = promoRepo;

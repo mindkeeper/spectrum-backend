@@ -2,9 +2,13 @@ const express = require("express");
 
 const promo = express.Router();
 
-const { addPromo } = require("../controllers/promo");
+const { addPromo, getPromo , getPromoCode } = require("../controllers/promo");
 
-promo.post("/add",addPromo)
+promo.post("/add",addPromo),
+
+promo.get("/",getPromo),
+
+promo.get("/code" , getPromoCode)
 
 
 module.exports = promo;
