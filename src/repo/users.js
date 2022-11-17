@@ -68,11 +68,11 @@ const getProfileId = (payload) => {
     let query = ""
     if (parseInt(roles_id) === 1) {
       return query =
-        "select display_name,address,gender,images from customers where users_id = $1 and deleted_at = null";
+        "select users.email,users.username,roles.role,customers.display_name,customers.address,customers.gender,customers.images from users inner join roles on users.roles_id = roles.id inner join customers users.id = customers.user_id where costumers.users_id = $1 and customers.deleted_at = null";
     }
     if (parseInt(roles_id) === 2) {
       return query =
-        "select display_name,address,gender,images,store_name,store_desc from sellers where users_id = $1 and deleted_at = null";
+        "select users.email,users.username,roles.role,sellers.display_name,sellers.address,gender,sellers.images,sellers.store_name,sellers.store_desc from users full join roles on users.roles_id = roles.id full join sellers on users.id = sellers.user_id where sellers.users_id = $1 and users.deleted_at = null";
       }
         postgreDB.query(query, [user_id], (error, result) => {
           if (error) {
