@@ -11,6 +11,14 @@ const register = async (req, res) => {
   }
 };
 
-const usersController = { register};
+
+
+const usersController = { 
+  register,
+ 
+};
+
+
+
 
 module.exports = usersController;
