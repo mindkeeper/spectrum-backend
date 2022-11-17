@@ -11,23 +11,22 @@ const register = async (req, res) => {
   }
 };
 
-const Profile = async (req, res) => {
+const profile = async (req, res) => {
   try {
     const { userPayload } = req;
-    const response = await usersRepo.getProfileId(userPayload);
+    const response = await usersRepo.getProfile(
+      userPayload.user_id,
+      userPayload.roles_id
+    );
     resHelper.success(res, response.status, response);
   } catch (error) {
     resHelper.error(res, error.status, error);
   }
 };
 
-const usersController = { 
+const usersController = {
   register,
-  Profile,
- 
+  profile,
 };
-
-
-
 
 module.exports = usersController;

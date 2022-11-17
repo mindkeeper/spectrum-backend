@@ -62,33 +62,33 @@ const register = (body) => {
   });
 };
 
-const getProfileId = (payload) => {
+const getProfile = (id, role) => {
   return new Promise((resolve, reject) => {
-    const { roles_id, user_id } = payload;
-    let query = ""
-    if (parseInt(roles_id) === 1) {
-      return query =
-        "select users.email,users.username,roles.role,customers.display_name,customers.address,customers.gender,customers.images from users inner join roles on users.roles_id = roles.id inner join customers users.id = customers.user_id where costumers.users_id = $1 and customers.deleted_at = null";
-    }
-    if (parseInt(roles_id) === 2) {
-      return query =
-        "select users.email,users.username,roles.role,sellers.display_name,sellers.address,gender,sellers.images,sellers.store_name,sellers.store_desc from users full join roles on users.roles_id = roles.id full join sellers on users.id = sellers.user_id where sellers.users_id = $1 and users.deleted_at = null";
+    let query = "";
+    if (parseInt(role) === 1)
+      query =
+        "select c.display_name, c.gender, c.address, c.image, u.email, r.role from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
+    if (parseInt(role) === 2)
+      query =
+        "select s.display_name, s.gender, s.address, s.image, s.store_name, s.store_desc, u.email, r.role from sellers s join users u on u.id = s.user_id join roles r on r.id = u.roles_id where s.user_id = $1 and s.deleted_at is null";
+    console.log(query);
+    postgreDB.query(query, [id], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
       }
-        postgreDB.query(query, [user_id], (error, result) => {
-          if (error) {
-            console.log(error);
-            return reject({ status: 500, msg: "Internal Server Error" });
-          }
-          resolve({ status: 201,
-            msg: "Your account created successfully",
-            data: { ...result.rows[0] },}
-           )
-      })});
-    }
+      return resolve({
+        status: 200,
+        msg: "Profile Details",
+        data: { ...result.rows[0] },
+      });
+    });
+  });
+};
 
 const usersRepo = {
   register,
-  getProfileId,
+  getProfile,
 };
 
 module.exports = usersRepo;
