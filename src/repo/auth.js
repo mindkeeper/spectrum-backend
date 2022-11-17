@@ -1,106 +1,98 @@
 const postgreDb = require("../config/postgre");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { token } = require("morgan");
-const users = require("../repo/users");
-const response = require("../helpers/sendResponse")
-const resHelper = require("../helpers/sendResponse");
-
 
 const login = (body) => {
-    return new Promise((resolve, reject) => {
-      const { email, password } = body;
-     
-      const getPasswordByEmailQuery =
-        "select id, email, password, roles_id from users where email = $1";
-      const getPasswordByEmailValues = [email];
-      postgreDb.query(
-        getPasswordByEmailQuery,
-        getPasswordByEmailValues,
-        (err, response) => {
-          if (err) {
-            console.error(err);
-        
-            return reject({ err });
-            
-          }
-          if (response.rows.length === 0)
-            return reject({
-              err: new Error("Email or password is wrong"),
-              statuscode: 401,
-            });
-         
-          const hashedPassword = response.rows[0].password;
-          bcrypt.compare(password, hashedPassword, (err, isSame) => {
-            if (err) {
-              console.error(err);
-              return reject({ err });
-            }
-            if (!isSame)
-              return reject({
-                err: new Error("Email or password is wrong"),
-                statusCode: 401,
-              });
-           
-            const payload = {
-              user_id: response.rows[0].id,
-              email: response.rows[0].email,
-              email,
-              roles_id: response.rows[0].roles_id,
-            };
-            const token = jwt.sign(
-              payload,
-              process.env.secret_key,
-              {
-                expiresIn: "60m",
-                issuer: process.env.issuer,
-              },        
-              (err, token) => {
-                if (err) {
-                  console.error(err);
-                  return reject({ err });
-                }
-                return resolve(
-                  { 
-                  token,
-                  email: payload.email,
-                  id: payload.user_id,
-                  roles_id: payload.roles_id,
-                },
-                users.insertWhitelistToken(token)
-                );
-              }, 
-            );
-            
-          });
+  return new Promise((resolve, reject) => {
+    const { email, password } = body;
+
+    const getCridentialsQuery =
+      "select id, email, password, roles_id from users where email = $1";
+    postgreDb.query(getCridentialsQuery, [email], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (result.rows.length === 0)
+        return reject({ status: 401, msg: "Email/Password is wrong" });
+
+      const hashedPassword = result.rows[0].password;
+      bcrypt.compare(password, hashedPassword, (error, isSame) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal Server Error" });
         }
-      );
+        if (!isSame)
+          return reject({ status: 401, msg: "Email/Password is wrong" });
+
+        const payload = {
+          user_id: result.rows[0].id,
+          email: result.rows[0].email,
+          roles_id: result.rows[0].roles_id,
+        };
+        jwt.sign(
+          payload,
+          process.env.SECRET_KEY,
+          {
+            expiresIn: "60m",
+            issuer: process.env.ISSUER,
+          },
+          (error, token) => {
+            if (error) {
+              console.log(error);
+              return reject({ status: 500, msg: "Internal Server Error" });
+            }
+            const inserTokenQuery =
+              "insert into whitelist_token (token) values ($1) ";
+            postgreDb.query(inserTokenQuery, [token], (error, result) => {
+              if (error) {
+                console.log(error);
+                return reject({ status: 500, msg: "Internal Server Error" });
+              }
+              return resolve({
+                status: 200,
+                msg: "Login Successfull",
+                data: { token, ...payload },
+              });
+            });
+          }
+        );
+      });
     });
-  };
+  });
+};
 
-const logout = async (req, res) => {
-  try {
-    const token = req.header("x-access-token");
-    console.log(token);
-    await users.deleteWhitelistToken(token);
-    // response(res, { status: 200, message: "Logout success" });
-    resHelper.success(res, response.status, response);
-  } catch (error) {
-    console.log(error);
-    // return response(res, {
-    //   error,
-    //   status: 500,
-    //   message: "Internal server error",
-    // });
-    res.status(500).json({error, msg: "internal server error" });
-    // resHelper.error(res, error.status, error);
-  }
-}
+const deleteWhitelistToken = (token) => {
+  return new Promise((resolve, reject) => {
+    const query = "delete from whitelist_token where token = $1";
+    postgreDb.query(query, [token], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      console.log(query, result.rowCount);
+      return resolve({ status: 200, msg: "Logout Successfull" });
+    });
+  });
+};
 
+const checkWhitelistToken = (token) => {
+  return new Promise((resolve, reject) => {
+    const query = "select * from whitelist_token where token = $1";
+    postgreDb.query(query, [token], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject(error);
+      }
+      resolve(result);
+    });
+  });
+};
 
 const authRepo = {
   login,
-  logout
+  deleteWhitelistToken,
+  checkWhitelistToken,
 };
 
 module.exports = authRepo;

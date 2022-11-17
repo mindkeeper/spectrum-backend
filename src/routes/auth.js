@@ -1,10 +1,10 @@
-const authRouter = require("express").Router()
-const authController = require("../controllers/auth")
+const authRouter = require("express").Router();
+const authController = require("../controllers/auth");
 // const {logout} = require ("../repo/auth")
-const authRepo = require ("../repo/auth")
+
 // const {checkWhitelistToken} = require ('../repo/users')
 //login
-authRouter.post("/login", authController.authCon)
-authRouter.delete("/logout", authRepo.logout)
+authRouter.post("/login", authController.login);
+authRouter.delete("/logout", authController.logout);
 
-module.exports = authRouter
+module.exports = authRouter;
