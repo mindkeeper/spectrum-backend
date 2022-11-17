@@ -22,9 +22,19 @@ const logout = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const response = await authRepo.resetPassword(req.body);
+    resHelper.success(res, response.status, response);
+  } catch (error) {
+    resHelper.error(res, error.status, error);
+  }
+};
+
 const authController = {
   login,
   logout,
+  resetPassword,
 };
 
 module.exports = authController;
