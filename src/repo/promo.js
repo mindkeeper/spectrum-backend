@@ -69,7 +69,7 @@ const getAllPromo = (page, limit) => {
         return resolve({
           status: 201,
           msg: "this is promo",
-          data: { ...result.rows },
+          data: result.rows ,
           meta
         });
       });
@@ -80,7 +80,7 @@ const getAllPromo = (page, limit) => {
 const getPromoCode = (code) => {
   return new Promise((resolve, reject) => {
     const upsize = code.toUpperCase();
-    const query = "select * from promo where promo.code = $1";
+    const query = "select * from promo where promo.code = $1 and deleted_at = null";
     postgreDB.query(query, [upsize], (error, result) => {
       if (error) {
         console.log(error);
