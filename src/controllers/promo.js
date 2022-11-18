@@ -13,8 +13,9 @@ const addPromo = async (req, res) => {
 
 const getPromo = async (req, res) => {
   try {
-    const response = await promoRepo.getAllPromo();
-    resHelper.success(res, response.status, response);
+    const {query} = req
+    const response = await promoRepo.getAllPromo(query.page, query.limit);
+    resHelper.success(res, response.status, response,);
   } catch (error) {
     resHelper.error(res, error.status, error);
   }

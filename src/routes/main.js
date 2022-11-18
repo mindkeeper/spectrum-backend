@@ -2,17 +2,17 @@ const express = require("express");
 
 const users = require("./users");
 const authRouter = require("./auth");
-const promoRouter = require('./promo')
+const promoRouter = require("./promo");
+const products = require("./products");
 
 const mainRouter = express.Router();
-
 
 const prefix = "/api";
 
 mainRouter.use(`${prefix}/users`, users);
 mainRouter.use(`${prefix}/auth`, authRouter);
-mainRouter.use(`${prefix}/promo`, promoRouter)
-
+mainRouter.use(`${prefix}/promo`, promoRouter);
+mainRouter.use(`${prefix}/products`, products);
 
 mainRouter.get(`/`, (req, res) => {
   res.json({ msg: "Welcome" });

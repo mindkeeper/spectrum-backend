@@ -5,7 +5,7 @@ const path = require("path");
 const uploader = async (req, res, next) => {
   const { file } = req;
   if (!file) return next();
-
+  
   const parser = new dataUriParser();
   const buffer = file.buffer;
   const ext = path.extname(file.originalname).toString();
