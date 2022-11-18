@@ -27,7 +27,7 @@ const addPromo = (body) => {
 
 const getAllPromo = (page, limit) => {
   return new Promise((resolve, reject) => {
-    console.log(limit)
+    console.log(limit);
     let link = "/promo/?";
     const countQuery = "select count(id) as count from promo";
     const sqlLimit = !limit ? 4 : parseInt(limit);
@@ -70,7 +70,7 @@ const getAllPromo = (page, limit) => {
           status: 201,
           msg: "this is promo",
           data: { ...result.rows },
-          meta
+          meta,
         });
       });
     });
