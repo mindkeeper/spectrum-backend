@@ -129,7 +129,7 @@ const editProfile = (id, role, body, file) => {
 
     Object.keys(body).forEach((key, idx, array) => {
       if (idx === array.length - 1) {
-        query += ` ${key} = $${idx + 1} where user_id = $${idx + 2}`;
+        query += ` ${key} = $${idx + 1} where user_id = $${idx + 2} returning display_name`;
         values.push(body[key], id);
         return;
       }
@@ -144,11 +144,11 @@ const editProfile = (id, role, body, file) => {
       console.log(values, query);
       console.log(result);
       let data = {};
-      if (file) data = { Image: imageUrl, ...result.rows[0] };
-      data = { Image: imageUrl, ...result.rows[0] };
+      if (file) data = { Image: imageUrl, ...result.rows[0]  };
+      data = { Image: imageUrl, ...result.rows[0] }
       return resolve({
         status: 200,
-        msg: `${result.rows[0]}, your profile successfully updated`,
+        msg: `${result.rows[0].display_name} Your profile has been updated`,
         data,
         
       });
