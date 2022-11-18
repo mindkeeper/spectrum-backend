@@ -137,56 +137,13 @@ const editProfile = (id, role, body, file) => {
   });
 };
 
-const updateUser = (id, body, file) => {
-  return new Promise((resolve, reject) => {
-    const timeStamp = Date.now() / 1000;
-    const values = [];
-    let query = "update customers set ";
-    let imageUrl = "";
-    if (file) {
-      imageUrl = `${file.url} `;
-      if (Object.keys(body).length > 0) {
-        query += `image = '${imageUrl}', `;
-      }
-      if (Object.keys(body).length === 0) {
-        query += `image = '${imageUrl}', updated_at = to_timestamp($1) where user_id = $2 returning display_name`;
-        values.push(timeStamp, id);
-      }
-    }
-    Object.keys(body).forEach((key, index, array) => {
-      if (index === array.length - 1) {
-        query += `${key} = $${index + 1}, updated_at = to_timestamp($${
-          index + 2
-        }) where user_id = $${index + 3} returning display_name`;
-        values.push(body[key], timeStamp, id);
-        return;
-      }
-      query += `${key} = $${index + 1}, `;
-      values.push(body[key]);
-    });
-    console.log(query);
-    db.query(query, values, (error, result) => {
-      if (error) {
-        console.log(error);
-        return reject({ status: 500, msg: "Internal Server Error" });
-      }
-      let data = {};
-      if (file) data = { Image: imageUrl, ...result.rows[0] };
-      data = { Image: imageUrl, ...result.rows[0] };
-      return resolve({
-        status: 200,
-        msg: `${result.rows[0].display_name}, your profile successfully updated`,
-        data,
-      });
-    });
-  });
-};
+
 
 const usersRepo = {
   register,
   getProfile,
   editProfile,
-  updateUser,
+ 
 };
 
 module.exports = usersRepo;
