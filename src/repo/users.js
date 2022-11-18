@@ -89,25 +89,6 @@ const getProfile = (id, role) => {
 
 const editProfile = (id, role, body, file) => {
   return new Promise((resolve, reject) => {
-    // const { display_name, gender, address, image } = body;
-    // let query = "update customers set ";
-    // const values = [];
-    // console.log(id);
-    // if (file) {
-    //   const imageUrl = `${file.url}`;
-
-    //   if (!display_name && !gender && !address) {
-    //     if (file && file.fieldname == "imageUrl") {
-    //       query += `image = '${imageUrl}' where user_id = $1 returning display_name`;
-    //       values.push(id);
-    //     }
-    //   } else {
-    //     if (file && file.fieldname == "image") {
-    //       query += `image = '${imageUrl}',`;
-
-    //     }
-    //   }
-    // }
 
     const timeStamp = Date.now() / 1000;
     const values = [];
