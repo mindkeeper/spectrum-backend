@@ -2,11 +2,11 @@ const db = require("../config/postgre");
 
 const createProduct = (req) => {
   return new Promise((resolve, reject) => {
-    const { body } = req;
+    const { body, userPayload } = req;
     const images = req.file;
     const timeStamp = Date.now() / 1000;
     // const categories = body.categories;
-    // const userId = userPayload.user_id;
+    const userId = userPayload.user_id;
     const {
       product_name,
       price,
@@ -15,7 +15,7 @@ const createProduct = (req) => {
       color_id,
       conditions,
       description,
-      user_id,
+      // user_id,
     } = body;
 
     // if (!images)
@@ -26,7 +26,8 @@ const createProduct = (req) => {
     const addProductValues = [
       product_name,
       price,
-      user_id,
+      userId,
+      // user_id,
       stock,
       brand_id,
       color_id,
@@ -120,8 +121,155 @@ const createProduct = (req) => {
   });
 };
 
+const searchProducts = (req) => {
+  return new Promise((resolve, reject) => {
+    const {
+      search,
+      categoryId,
+      brandId,
+      minPrice,
+      maxPrice,
+      colorId,
+      sort,
+      page,
+      limit,
+    } = req.query;
+
+    let link = "";
+    let countQuery =
+      "select count(distinct p.id) count from products p join brands b on b.id = p.brand_id join product_categories pc on pc.product_id = p.id join categories c on c.id = pc.category_id join product_colors pc2 on pc2.id = p.color_id ";
+    let searchQuery =
+      "select p.id, p.product_name, p.price, (select images from product_images where product_id = p.id limit 1) as image from products p join brands b on b.id = p.brand_id join product_categories pc on pc.product_id = p.id join categories c on c.id = pc.category_id join product_colors pc2 on pc2.id = p.color_id ";
+
+    let checkWhere = true;
+    if (search) {
+      link += `search=${search}&`;
+      countQuery += `${
+        checkWhere ? "WHERE" : "AND"
+      } lower(p.product_name) like lower('%${search}%') `;
+      searchQuery += `${
+        checkWhere ? "WHERE" : "AND"
+      } lower(p.product_name) like lower('%${search}%') `;
+      checkWhere = false;
+    }
+    if (categoryId) {
+      link += `categoryId=${categoryId}&`;
+      countQuery += `${
+        checkWhere ? "WHERE" : "AND"
+      } pc.category_id = ${categoryId} `;
+      searchQuery += `${
+        checkWhere ? "WHERE" : "AND"
+      } pc.category_id = ${categoryId} `;
+      checkWhere = false;
+    }
+    if (brandId) {
+      link += `brandId=${brandId}&`;
+      countQuery += `${checkWhere ? "WHERE" : "AND"} b.id = ${brandId} `;
+      searchQuery += `${checkWhere ? "WHERE" : "AND"} b.id = ${brandId} `;
+      checkWhere = false;
+    }
+
+    if (colorId) {
+      link += `colorId=${colorId}&`;
+      countQuery += `${checkWhere ? "WHERE" : "AND"} pc2.id = ${colorId} `;
+      searchQuery += `${checkWhere ? "WHERE" : "AND"} pc2.id = ${colorId} `;
+      checkWhere = false;
+    }
+
+    if (minPrice && maxPrice) {
+      link += `minPrice=${minPrice}&maxPrice=${maxPrice}&`;
+      countQuery += `${
+        checkWhere ? "WHERE" : "AND"
+      } p.price between ${minPrice} and ${maxPrice} `;
+      searchQuery += `${
+        checkWhere ? "WHERE" : "AND"
+      } p.price between ${minPrice} and ${maxPrice} `;
+      checkWhere = false;
+    }
+    if (!minPrice && maxPrice) {
+      link += `maxPrice=${maxPrice}&`;
+      countQuery += `${checkWhere ? "WHERE" : "AND"} p.price <= ${maxPrice} `;
+      searchQuery += `${checkWhere ? "WHERE" : "AND"} p.price <= ${maxPrice} `;
+      checkWhere = false;
+    }
+    if (minPrice && !maxPrice) {
+      link += `minPrice=${minPrice}&`;
+      countQuery += `${checkWhere ? "WHERE" : "AND"} p.price >= ${minPrice} `;
+      searchQuery += `${checkWhere ? "WHERE" : "AND"} p.price >= ${minPrice} `;
+      checkWhere = false;
+    }
+    searchQuery += "group by p.id ";
+    if (sort) {
+      if (sort.toLowerCase() === "newest") {
+        link += "sort=newest&";
+        searchQuery += "order by p.created_at desc ";
+      }
+      if (sort.toLowerCase() === "oldest") {
+        link += "sort=oldest&";
+        searchQuery += "order by p.created_at asc ";
+      }
+      if (sort.toLowerCase() === "cheapest") {
+        link += "sort=cheapest&";
+        searchQuery += "order by p.price asc ";
+      }
+      if (sort.toLowerCase() === "priciest") {
+        link += "sort=priciest&";
+        searchQuery += "order by p.created_at desc ";
+      }
+    }
+    searchQuery += "limit $1 offset $2";
+    db.query(countQuery, (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (result.rows.length === 0)
+        return reject({ status: 404, msg: "Product not found" });
+
+      const totalData = parseInt(result.rows[0].count);
+      const sqlLimit = limit ? parseInt(limit) : 20;
+      const sqlOffset =
+        !page || page === "1" ? 0 : (parseInt(page) - 1) * sqlLimit;
+
+      const currentPage = parseInt(page) || 1;
+      const totalPage =
+        sqlLimit > totalData ? 1 : Math.ceil(totalData / sqlLimit);
+
+      const prev =
+        currentPage === 1
+          ? null
+          : link + `page=${currentPage - 1}&limit=${sqlLimit}`;
+      const next =
+        currentPage === totalPage
+          ? null
+          : link + `page=${currentPage + 1}&limit=${sqlLimit}`;
+
+      const meta = {
+        page: currentPage,
+        totalPage,
+        limit: sqlLimit,
+        totalData,
+        prev,
+        next,
+      };
+      db.query(searchQuery, [sqlLimit, sqlOffset], (error, result) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal Server Error" });
+        }
+        return resolve({
+          status: 200,
+          msg: "list Product",
+          data: result.rows,
+          meta,
+        });
+      });
+    });
+  });
+};
 const productsRepo = {
   createProduct,
+  searchProducts,
 };
 
 module.exports = productsRepo;
