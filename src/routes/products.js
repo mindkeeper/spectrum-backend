@@ -10,7 +10,7 @@ const allowedRoles = require("../middleware/allowedRoles");
 products.post(
   "/new",
   isLogin(),
-  allowedRoles(1),
+  allowedRoles(2),
   multipleUpload,
   cloudinaryUpload,
   productsController.createProduct
@@ -18,5 +18,6 @@ products.post(
 
 products.get("/", productsController.searchProducts);
 products.get("/details/:id", productsController.getDetailsById);
+products.get("/related/:id", productsController.getRelatedProducts);
 
 module.exports = products;

@@ -136,9 +136,8 @@ const getDetailsById = (req) => {
       if (result.rows.length === 0)
         return reject({ status: 404, msg: "Product not found" });
 
-      // console.log(result.rows[0]);
       let detailProduct = { ...result.rows[0] };
-      // console.log(detailProduct);
+
       const getCategoryQuery =
         "select c.category_name from categories c join product_categories pc on c.id = pc.category_id where pc.product_id = $1";
       db.query(getCategoryQuery, [productId], (error, result) => {
@@ -323,10 +322,72 @@ const searchProducts = (req) => {
     });
   });
 };
+
+const getRelatedProducts = (req) => {
+  return new Promise((resolve, reject) => {
+    const productId = req.params.id;
+    const getBrandQuey = "select p.brand_id  from products p where p.id = $1";
+
+    db.query(getBrandQuey, [productId], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      const brandId = result.rows[0].brand_id;
+      const getCategoryQuery =
+        "select pc.category_id from product_categories pc where pc.product_id = $1";
+
+      db.query(getCategoryQuery, [productId], (error, result) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal Server Error" });
+        }
+
+        const categoryResult = result.rows;
+        const categories = [];
+        categoryResult.forEach((category) =>
+          categories.push(category.category_id)
+        );
+        const prepareValues = [parseInt(productId), brandId];
+        let relatedQuery = `select distinct p.id, p.product_name, p.price, (select pi2.images from product_images pi2 where pi2.product_id = $1 limit 1) from products p
+        join product_categories pc on pc.product_id = p.id
+        join categories c on c.id  = pc.category_id
+        where p.id != $1 and p.deleted_at is null and p.brand_id = $2 and c.id in (`;
+
+        categories.forEach((e, index, array) => {
+          if (index === array.length - 1) {
+            relatedQuery += `$${index + 3}`;
+            prepareValues.push(e);
+          } else {
+            relatedQuery += `$${index + 3}, `;
+            prepareValues.push(e);
+          }
+        });
+        relatedQuery += `) limit 9`;
+
+        db.query(relatedQuery, prepareValues, (error, result) => {
+          if (error) {
+            console.log(error);
+            return reject({ status: 500, msg: "Internal server error" });
+          }
+          if (result.rows.length === 0)
+            return reject({ status: 404, msg: "Related Products not found" });
+          return resolve({
+            status: 200,
+            msg: "Related Products",
+            data: result.rows,
+          });
+        });
+      });
+    });
+  });
+};
+
 const productsRepo = {
   createProduct,
   searchProducts,
   getDetailsById,
+  getRelatedProducts,
 };
 
 module.exports = productsRepo;
