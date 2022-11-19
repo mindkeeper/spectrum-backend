@@ -419,8 +419,8 @@ const getSellerProducts = (req) => {
 
     if (filter) {
       if (filter.toLowerCase() === "archived") {
-        countQuery += "AND p.deleted_at IS NOT NULL ";
-        query += "AND p.deleted_at IS NOT NULL ";
+        countQuery += "AND p.deleted_at IS NOT NULL AND p.stock != 0 ";
+        query += "AND p.deleted_at IS NOT NULL AND p.stock != 0 ";
         link += "filter=archived&";
       }
       if (filter.toLowerCase() === "sold-out") {
