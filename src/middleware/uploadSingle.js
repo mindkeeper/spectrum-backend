@@ -13,8 +13,9 @@ const multerOption = {
   limits: { fileSize: 1 * 1024 * 1024 },
 };
 
-const upload = multer(multerOption).single("image");
-const multerHandler = (req, res, next) => {
+
+const uploadFile = (req, res, next) => {
+  const upload = multer(multerOption).single("image");
   upload(req, res, (error) => {
     if (error instanceof multer.MulterError) {
       console.log(error);
@@ -30,4 +31,4 @@ const multerHandler = (req, res, next) => {
   });
 };
 
-module.exports = multerHandler;
+module.exports = uploadFile;

@@ -65,6 +65,7 @@ const register = (body) => {
 const getProfile = (id, role) => {
   return new Promise((resolve, reject) => {
     let query = "";
+    console.log(id);
     if (parseInt(role) === 1)
       query =
         "select c.display_name, c.gender, c.address, c.image, u.email, r.role from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
@@ -86,9 +87,63 @@ const getProfile = (id, role) => {
   });
 };
 
+const editProfile = (id, role, body, file) => {
+  return new Promise((resolve, reject) => {
+
+    const timeStamp = Date.now() / 1000;
+    const values = [];
+    let query = "";
+    if (parseInt(role) === 1) query = "update customers set ";
+    if (parseInt(role) === 2) query = "update sellers set ";
+
+    let imageUrl = "";
+    if (file) {
+      imageUrl = `${file.url} `;
+      if (Object.keys(body).length > 0) {
+        query += `image = '${imageUrl}', `;
+      }
+      if (Object.keys(body).length === 0) {
+        query += `image = '${imageUrl}', updated_at = to_timestamp($1) where user_id = $2 returning display_name`;
+        values.push(timeStamp, id);
+      }
+    }
+
+    Object.keys(body).forEach((key, idx, array) => {
+      if (idx === array.length - 1) {
+        query += ` ${key} = $${idx + 1} where user_id = $${idx + 2} returning display_name`;
+        values.push(body[key], id);
+        return;
+      }
+      query += `${key} = $${idx + 1},`;
+      values.push(body[key]);
+    });
+    postgreDB.query(query, values, (err, result) => {
+      if (err) {
+        console.log(query, values, file);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      console.log(values, query);
+      console.log(result);
+      let data = {};
+      if (file) data = { Image: imageUrl, ...result.rows[0]  };
+      data = { Image: imageUrl, ...result.rows[0] }
+      return resolve({
+        status: 200,
+        msg: `${result.rows[0].display_name} Your profile has been updated`,
+        data,
+        
+      });
+    });
+  });
+};
+
+
+
 const usersRepo = {
   register,
   getProfile,
+  editProfile,
+ 
 };
 
 module.exports = usersRepo;

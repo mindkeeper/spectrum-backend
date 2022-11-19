@@ -121,6 +121,60 @@ const createProduct = (req) => {
   });
 };
 
+const getDetailsById = (req) => {
+  return new Promise((resolve, reject) => {
+    const productId = req.params.id;
+
+    const productQuery =
+      "select p.id, p.product_name, p.price, p.stock, p.conditions, p.description, s.display_name, s.store_name, s.store_desc, b.brand_name  from products p join sellers s on s.user_id = p.user_id join brands b on b.id = p.brand_id where p.id = $1";
+
+    db.query(productQuery, [productId], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (result.rows.length === 0)
+        return reject({ status: 404, msg: "Product not found" });
+
+      // console.log(result.rows[0]);
+      let detailProduct = { ...result.rows[0] };
+      // console.log(detailProduct);
+      const getCategoryQuery =
+        "select c.category_name from categories c join product_categories pc on c.id = pc.category_id where pc.product_id = $1";
+      db.query(getCategoryQuery, [productId], (error, result) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal Server Error" });
+        }
+        const categories = result.rows;
+
+        const category = [];
+        categories.forEach((e) => category.push(e.category_name));
+        detailProduct = { ...detailProduct, categories: category };
+
+        const getImageQuery =
+          "select images from product_images where  product_id = $1";
+        db.query(getImageQuery, [productId], (error, result) => {
+          if (error) {
+            console.log(error);
+            return reject({ status: 500, msg: "Internal Server Error" });
+          }
+          const imageResult = result.rows;
+
+          const images = [];
+          imageResult.forEach((image) => images.push(image.images));
+          detailProduct = { ...detailProduct, images: images };
+          return resolve({
+            status: 200,
+            msg: "Detail Product",
+            data: detailProduct,
+          });
+        });
+      });
+    });
+  });
+};
+
 const searchProducts = (req) => {
   return new Promise((resolve, reject) => {
     const {
@@ -252,6 +306,8 @@ const searchProducts = (req) => {
         prev,
         next,
       };
+
+      console.log(countQuery);
       db.query(searchQuery, [sqlLimit, sqlOffset], (error, result) => {
         if (error) {
           console.log(error);
@@ -270,6 +326,7 @@ const searchProducts = (req) => {
 const productsRepo = {
   createProduct,
   searchProducts,
+  getDetailsById,
 };
 
 module.exports = productsRepo;
