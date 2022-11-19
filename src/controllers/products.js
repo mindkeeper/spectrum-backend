@@ -27,10 +27,19 @@ const getDetailsById = async (req, res) => {
     resHelper.error(res, error.status, error);
   }
 };
+const getRelatedProducts = async (req, res) => {
+  try {
+    const response = await productsRepo.getRelatedProducts(req);
+    resHelper.success(res, response.status, response);
+  } catch (error) {
+    resHelper.error(res, error.status, error);
+  }
+};
 const productsController = {
   createProduct,
   searchProducts,
   getDetailsById,
+  getRelatedProducts,
 };
 
 module.exports = productsController;
