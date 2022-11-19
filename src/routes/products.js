@@ -19,5 +19,17 @@ products.post(
 products.get("/", productsController.searchProducts);
 products.get("/details/:id", productsController.getDetailsById);
 products.get("/related/:id", productsController.getRelatedProducts);
+products.get(
+  "/seller",
+  isLogin(),
+  allowedRoles(2),
+  productsController.getSellerProducts
+);
+products.delete(
+  "/delete/:id",
+  isLogin(),
+  allowedRoles(2),
+  productsController.deleteProduct
+);
 
 module.exports = products;

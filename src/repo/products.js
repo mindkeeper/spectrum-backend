@@ -251,7 +251,9 @@ const searchProducts = (req) => {
       searchQuery += `${checkWhere ? "WHERE" : "AND"} p.price >= ${minPrice} `;
       checkWhere = false;
     }
-    searchQuery += "group by p.id ";
+    searchQuery += `${
+      checkWhere ? "WHERE" : "AND"
+    } p.deleted_at IS NULL group by p.id `;
     if (sort) {
       if (sort.toLowerCase() === "newest") {
         link += "sort=newest&";
@@ -383,11 +385,109 @@ const getRelatedProducts = (req) => {
   });
 };
 
+const deleteProduct = (req) => {
+  return new Promise((resolve, reject) => {
+    const userId = req.userPayload.user_id;
+    const productId = req.params.id;
+
+    const timeStamp = Date.now() / 1000;
+    const query =
+      "update products set deleted_at = to_timestamp($1) where user_id = $2 and id = $3 returning *";
+    db.query(query, [timeStamp, userId, productId], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      return resolve({
+        status: 200,
+        msg: "Product deleted",
+        data: result.rows[0],
+      });
+    });
+  });
+};
+
+const getSellerProducts = (req) => {
+  return new Promise((resolve, reject) => {
+    const { filter, page, limit } = req.query;
+    const userId = req.userPayload.user_id;
+    let link = "";
+    let countQuery =
+      "select count(p.id) as count from products p where user_id = $1 ";
+    let query =
+      "select p.id, p.product_name, p.price, (select images from product_images where product_id = p.id limit 1) as image from products p where user_id = $1 ";
+
+    if (filter) {
+      if (filter.toLowerCase() === "archived") {
+        countQuery += "AND p.deleted_at IS NOT NULL ";
+        query += "AND p.deleted_at IS NOT NULL ";
+        link += "filter=archived&";
+      }
+      if (filter.toLowerCase() === "sold-out") {
+        countQuery += "AND p.stock = 0 ";
+        query += "AND p.stock = 0 ";
+        link += "filter=sold-out&";
+      }
+    }
+    if (!filter) {
+      countQuery += "AND p.deleted_at IS NULL ";
+      query += "AND p.deleted_at IS NULL ";
+    }
+    query += "limit $2 offset $3";
+    console.log(countQuery);
+    db.query(countQuery, [userId], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (parseInt(result.rows[0].count) === 0)
+        return reject({ status: 404, msg: "Product not found" });
+      const totalData = parseInt(result.rows[0].count);
+      const sqlLimit = limit ? parseInt(limit) : 5;
+      const sqlOffset =
+        !page || page == 1 ? 0 : (parseInt(page) - 1) * sqlLimit;
+      const currentPage = page ? parseInt(page) : 1;
+      const totalPage =
+        totalData < sqlLimit ? 1 : Math.ceil(totalData / sqlLimit);
+
+      const prev =
+        currentPage === 1
+          ? null
+          : link + `page=${currentPage - 1}&limit=${sqlLimit}`;
+      const next =
+        currentPage === totalPage
+          ? null
+          : link + `page=${currentPage + 1}&limit=${sqlLimit}`;
+      const meta = {
+        page: parseInt(currentPage),
+        totalData: parseInt(totalData),
+        limit: parseInt(sqlLimit),
+        prev,
+        next,
+      };
+      db.query(query, [userId, sqlLimit, sqlOffset], (error, result) => {
+        if (error) {
+          console.log(error);
+          return reject({ status: 500, msg: "Internal server error" });
+        }
+        return resolve({
+          status: 200,
+          msg: "Your Product List",
+          data: result.rows,
+          meta,
+        });
+      });
+    });
+  });
+};
+
 const productsRepo = {
   createProduct,
   searchProducts,
   getDetailsById,
   getRelatedProducts,
+  deleteProduct,
+  getSellerProducts,
 };
 
 module.exports = productsRepo;
