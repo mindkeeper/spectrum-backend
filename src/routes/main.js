@@ -4,6 +4,7 @@ const users = require("./users");
 const authRouter = require("./auth");
 const promoRouter = require("./promo");
 const products = require("./products");
+const categories = require("./categories");
 
 const mainRouter = express.Router();
 
@@ -13,6 +14,7 @@ mainRouter.use(`${prefix}/users`, users);
 mainRouter.use(`${prefix}/auth`, authRouter);
 mainRouter.use(`${prefix}/promo`, promoRouter);
 mainRouter.use(`${prefix}/products`, products);
+mainRouter.use(`${prefix}/categories`, categories);
 
 mainRouter.get(`/`, (req, res) => {
   res.json({ msg: "Welcome" });
