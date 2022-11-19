@@ -9,8 +9,7 @@ const createTransactions = (body) => {
         total,
         price,
         promo_code,
-        cart_total,
-        
+        cart_total,       
         shipping,
         status_id,
       } = body;
