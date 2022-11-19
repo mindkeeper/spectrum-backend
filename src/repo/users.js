@@ -68,7 +68,7 @@ const getProfile = (id, role) => {
     console.log(id);
     if (parseInt(role) === 1)
       query =
-        "select c.display_name, c.gender, c.address, c.image, u.email, r.role from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
+        "select c.display_name, c.gender, c.address, c.image, u.email, r.role, c.store_desc from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
     if (parseInt(role) === 2)
       query =
         "select s.display_name, s.gender, s.address, s.image, s.store_name, s.store_desc, u.email, r.role from sellers s join users u on u.id = s.user_id join roles r on r.id = u.roles_id where s.user_id = $1 and s.deleted_at is null";
