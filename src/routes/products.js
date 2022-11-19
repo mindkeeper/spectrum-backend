@@ -17,4 +17,6 @@ products.post(
 );
 
 products.get("/", productsController.searchProducts);
+products.get("/details/:id", productsController.getDetailsById);
+
 module.exports = products;
