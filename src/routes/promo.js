@@ -1,14 +1,11 @@
 const express = require("express");
 
-const promo = express.Router();
+const transaction = express.Router();
 
-const { addPromo, getPromo , getPromoCode } = require("../controllers/promo");
+const { transactionCont } = require("../controllers/promo");
 
 promo.post("/add",addPromo),
 
-promo.get("/",getPromo),
+promo.get("/",getTransactions),
 
-promo.get("/code" , getPromoCode)
-
-
-module.exports = promo;
+module.exports = transaction;
