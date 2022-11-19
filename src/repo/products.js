@@ -121,6 +121,10 @@ const createProduct = (req) => {
   });
 };
 
+const getDetailsById = (req) => {
+  return new Promise((resolve, reject) => {});
+};
+
 const searchProducts = (req) => {
   return new Promise((resolve, reject) => {
     const {
@@ -252,6 +256,8 @@ const searchProducts = (req) => {
         prev,
         next,
       };
+
+      console.log(countQuery);
       db.query(searchQuery, [sqlLimit, sqlOffset], (error, result) => {
         if (error) {
           console.log(error);
