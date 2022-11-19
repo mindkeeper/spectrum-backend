@@ -4,14 +4,14 @@ const createTransactions = (body) => {
         "insert into transactions (user_id, product_name, quantity, total, price, promo_code, cart_total, shipping, created_at, updated_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, to_timestamp($11), to_timestamp($12)) returning *";
       const {
         user_id,
-        product_id,
-        size_id,
-        qty,
-        promo_id,
-        subtotal,
-        delivery_id,
+        product_name,
+        quantity,
         total,
-        payment_id,
+        price,
+        promo_code,
+        cart_total,
+        
+        shipping,
         status_id,
       } = body;
       const timeStamp = Date.now() / 1000;
