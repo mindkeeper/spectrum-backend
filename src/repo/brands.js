@@ -18,8 +18,8 @@ const getAllBrands = () => {
         return resolve({
           status: 200,
           msg: "list brands",
-          data: { ...result.rows },
-          
+          data: result.rows 
+
         });
       });
     });
