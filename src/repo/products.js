@@ -269,7 +269,7 @@ const searchProducts = (req) => {
       }
       if (sort.toLowerCase() === "priciest") {
         link += "sort=priciest&";
-        searchQuery += "order by p.created_at desc ";
+        searchQuery += "order by p.price desc ";
       }
     }
     searchQuery += "limit $1 offset $2";
@@ -480,8 +480,6 @@ const getSellerProducts = (req) => {
     });
   });
 };
-
-
 
 const productsRepo = {
   createProduct,
