@@ -114,7 +114,7 @@ const createTransaction = (req) => {
           let updateStock = "update products set stock = (CASE id ";
           let stockIdprepare = "";
           for (let i = 0; i < prepareUpdateStockValues.length / 2; i++) {
-            updateStock += `when $${1 + i * 2} then $${2 + i * 2} `;
+            updateStock += `when $${1 + i * 2} then $${2 + i * 2}::integer `;
 
             if (i === prepareUpdateStockValues.length / 2 - 1) {
               updateStock += "end) where id in(";
