@@ -81,7 +81,7 @@ const getPromoCode = (code) => {
   return new Promise((resolve, reject) => {
     const upsize = code.toUpperCase();
     const query =
-      "select * from promo where promo.code = $1 and deleted_at = null";
+      "select * from promo where promo.code = $1 and deleted_at is null";
     postgreDB.query(query, [upsize], (error, result) => {
       if (error) {
         console.log(error);
