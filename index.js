@@ -8,8 +8,10 @@ const server = express();
 const cors = require("cors");
 const { raw } = require("express");
 require("./src/config/redis");
-
-server.use(cors());
+const corsOptions = {
+  origin: "*",
+};
+server.use(cors(corsOptions));
 server.use(express.json());
 server.use(raw());
 // server.use(express.static("./public/images"));

@@ -90,7 +90,7 @@ const getProfile = (id, role) => {
 const editPassword = (new_password, old_password, id) => {
   return new Promise((resolve, reject) => {
     const getPwdQuery = "select password from users where id = $1";
-    postgreDB.query(getPwdQuery, id, (err, response) => {
+    postgreDB.query(getPwdQuery, [id], (err, response) => {
       if (err) {
         console.log(err);
         return reject({ err });
@@ -104,7 +104,7 @@ const editPassword = (new_password, old_password, id) => {
         if (!isSame) {
           return reject({
             err: new Error("old password is wrong"),
-            statusCode: 401,
+            status: 401,
           });
         }
         bcrypt.hash(new_password, 10, (error, hash) => {
@@ -114,7 +114,7 @@ const editPassword = (new_password, old_password, id) => {
           }
           const timeStamp = Date.now() / 1000;
           const query =
-            "update users set password = $1,updated_at = to_timestamp($2) where id = $3";
+            "update users set password = $1, updated_at = to_timestamp($2) where id = $3";
           postgreDB.query(query, [hash, timeStamp, id], (error) => {
             if (error) {
               return reject({ status: 500, msg: "internal server error" });

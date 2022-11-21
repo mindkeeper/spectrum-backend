@@ -415,7 +415,7 @@ const getSellerProducts = (req) => {
     let countQuery =
       "select count(p.id) as count from products p where user_id = $1 ";
     let query =
-      "select p.id, p.product_name, p.price, (select images from product_images where product_id = p.id limit 1) as image from products p where user_id = $1 ";
+      "select p.id, p.product_name, p.price, p.stock, (select images from product_images where product_id = p.id limit 1) as image from products p where user_id = $1 ";
 
     if (filter) {
       if (filter.toLowerCase() === "archived") {
