@@ -254,6 +254,9 @@ const searchProducts = (req) => {
     searchQuery += `${
       checkWhere ? "WHERE" : "AND"
     } p.deleted_at IS NULL AND p.stock != 0 group by p.id `;
+    countQuery += `${
+      checkWhere ? "WHERE" : "AND"
+    } p.deleted_at IS NULL AND p.stock != 0 `;
     if (sort) {
       if (sort.toLowerCase() === "newest") {
         link += "sort=newest&";
@@ -308,7 +311,7 @@ const searchProducts = (req) => {
         next,
       };
 
-      console.log(countQuery);
+      // console.log(countQuery);
       db.query(searchQuery, [sqlLimit, sqlOffset], (error, result) => {
         if (error) {
           console.log(error);
