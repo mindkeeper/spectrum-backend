@@ -253,7 +253,7 @@ const searchProducts = (req) => {
     }
     searchQuery += `${
       checkWhere ? "WHERE" : "AND"
-    } p.deleted_at IS NULL group by p.id `;
+    } p.deleted_at IS NULL AND p.stock != 0 group by p.id `;
     if (sort) {
       if (sort.toLowerCase() === "newest") {
         link += "sort=newest&";
