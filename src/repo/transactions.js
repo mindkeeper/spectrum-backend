@@ -130,7 +130,7 @@ const createTransaction = (req) => {
             msg: `Sorry the stock of this ${result.rows[i].product_name} doesnt meet the quantity you wanted :(`,
           });
         prepareUpdateStockValues.push(
-          parseInt(price),
+          parseInt(productList[i].productId),
           parseInt(result.rows[i].stock - productList[i].qty)
         );
         productWithPrice.push({
@@ -199,21 +199,17 @@ const createTransaction = (req) => {
           console.log(sqlUpdateStock);
           const stockvalues = prepareUpdateStockValues.map((e) => typeof e);
           console.log(stockvalues);
-          db.query(
-            sqlUpdateStock,
-            prepareUpdateStockValues,
-            (error, result) => {
-              if (error) {
-                console.log(error);
-                return reject({ status: 500, msg: "Internal Server Error" });
-              }
-              return resolve({
-                status: 201,
-                msg: "Transaction created",
-                data: { ...transactionResult, productList: resultProductList },
-              });
+          db.query(sqlUpdateStock, prepareUpdateStockValues, (error) => {
+            if (error) {
+              console.log(error);
+              return reject({ status: 500, msg: "Internal Server Error" });
             }
-          );
+            return resolve({
+              status: 201,
+              msg: "Transaction created",
+              data: { ...transactionResult, productList: resultProductList },
+            });
+          });
         });
       });
     });
