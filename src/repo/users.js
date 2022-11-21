@@ -90,7 +90,7 @@ const getProfile = (id, role) => {
 const editPassword = (new_password, old_password, id) => {
   return new Promise((resolve, reject) => {
     const getPwdQuery = "select password from users where id = $1";
-    postgreDB.query(getPwdQuery, id, (err, response) => {
+    postgreDB.query(getPwdQuery, [id], (err, response) => {
       if (err) {
         console.log(err);
         return reject({ err });
@@ -103,8 +103,8 @@ const editPassword = (new_password, old_password, id) => {
         }
         if (!isSame) {
           return reject({
-            err: new Error("old password is wrong"),
-            statusCode: 401,
+            status: 401,
+            msg:("old password is wrong"),
           });
         }
         bcrypt.hash(new_password, 10, (error, hash) => {
