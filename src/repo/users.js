@@ -104,7 +104,7 @@ const editPassword = (new_password, old_password, id) => {
         if (!isSame) {
           return reject({
             err: new Error("old password is wrong"),
-            statusCode: 401,
+            status: 401,
           });
         }
         bcrypt.hash(new_password, 10, (error, hash) => {
