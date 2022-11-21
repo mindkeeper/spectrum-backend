@@ -104,7 +104,6 @@ const editPassword = (password, id) => {
         return resolve({
           status: 201 ,
           msg: "password has been changed",
-          data: result.rows
         })
       });
     });
