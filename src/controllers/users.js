@@ -11,7 +11,7 @@ const register = async (req, res) => {
   }
 };
 
-const profile = async (req, res) => {
+const Profile = async (req, res) => {
   try {
     const { userPayload } = req;
     const response = await usersRepo.getProfile(
@@ -24,6 +24,7 @@ const profile = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 const editPwd = async (req,res) => {
   try {
     const {body , userPayload} = req;
@@ -38,6 +39,27 @@ const usersController = {
   register,
   profile,
   editPwd
+=======
+const editProfileCont = async (req, res) => {
+  try {
+    const { userPayload } = req;
+    const response = await usersRepo.editProfile(
+      userPayload.user_id,
+      userPayload.roles_id,
+      req.body,
+      req.file
+    );
+    resHelper.success(res, response.status, response);
+  } catch (error) {
+    resHelper.error(res, error.status, error);
+  }
+};
+
+const usersController = {
+  register,
+  Profile,
+  editProfileCont
+>>>>>>> master
 };
 
 module.exports = usersController;

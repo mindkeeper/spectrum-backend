@@ -6,10 +6,12 @@ const { PORT } = process.env;
 const mainRouter = require("./src/routes/main");
 const server = express();
 const cors = require("cors");
+const { raw } = require("express");
 require("./src/config/redis");
 
 server.use(cors());
 server.use(express.json());
+server.use(raw());
 // server.use(express.static("./public/images"));
 //parser encoded
 server.use(express.urlencoded({ extended: false }));

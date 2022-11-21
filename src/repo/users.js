@@ -65,9 +65,10 @@ const register = (body) => {
 const getProfile = (id, role) => {
   return new Promise((resolve, reject) => {
     let query = "";
+    console.log(id);
     if (parseInt(role) === 1)
       query =
-        "select c.display_name, c.gender, c.address, c.image, u.email, r.role from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
+        "select c.display_name, c.gender, c.address, c.image, u.email, r.role, c.store_desc from customers c join users u on u.id = c.user_id join roles r on r.id = u.roles_id where c.user_id = $1 and c.deleted_at is null";
     if (parseInt(role) === 2)
       query =
         "select s.display_name, s.gender, s.address, s.image, s.store_name, s.store_desc, u.email, r.role from sellers s join users u on u.id = s.user_id join roles r on r.id = u.roles_id where s.user_id = $1 and s.deleted_at is null";
@@ -86,34 +87,9 @@ const getProfile = (id, role) => {
   });
 };
 
-const editPassword = (password, id) => {
-  return new Promise((resolve, reject) => {
-    const timeStamp = Date.now() / 1000;
-    bcrypt.hash(password, 10, (error, hashedPwd) => {
-      if (error) {
-        console.log(error);
-        return reject({ status: 500, msg: "Internal Server Error" });
-      }
-      const query =
-        "update users set password = $1, updated_at = to_timestamp($2) where id = $3 returning password";
-      postgreDB.query(query, [hashedPwd, timeStamp, id], (error, result) => {
-        if(error) {
-          console.log(error);
-          return reject(error)
-        }
-        return resolve({
-          status: 201 ,
-          msg: "password has been changed",
-        })
-      });
-    });
-  });
-};
-
 const usersRepo = {
   register,
   getProfile,
-  editPassword
 };
 
 module.exports = usersRepo;

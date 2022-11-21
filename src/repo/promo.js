@@ -27,7 +27,7 @@ const addPromo = (body) => {
 
 const getAllPromo = (page, limit) => {
   return new Promise((resolve, reject) => {
-    console.log(limit)
+    console.log(limit);
     let link = "/promo/?";
     const countQuery = "select count(id) as count from promo";
     const sqlLimit = !limit ? 4 : parseInt(limit);
@@ -69,8 +69,8 @@ const getAllPromo = (page, limit) => {
         return resolve({
           status: 201,
           msg: "this is promo",
-          data: result.rows ,
-          meta
+          data: result.rows,
+          meta,
         });
       });
     });
@@ -80,7 +80,8 @@ const getAllPromo = (page, limit) => {
 const getPromoCode = (code) => {
   return new Promise((resolve, reject) => {
     const upsize = code.toUpperCase();
-    const query = "select * from promo where promo.code = $1 and deleted_at = null";
+    const query =
+      "select * from promo where promo.code = $1 and deleted_at is null";
     postgreDB.query(query, [upsize], (error, result) => {
       if (error) {
         console.log(error);

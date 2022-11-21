@@ -2,10 +2,10 @@ const cloudinary = require("../config/clodunary");
 const dataUriParser = require("datauri/parser");
 const path = require("path");
 
-const uploader = async (req, res, next) => {
+const uploaderCloudinary = async (req, res, next) => {
   const { file } = req;
   if (!file) return next();
-
+  
   const parser = new dataUriParser();
   const buffer = file.buffer;
   const ext = path.extname(file.originalname).toString();
@@ -27,4 +27,4 @@ const uploader = async (req, res, next) => {
   }
 };
 
-module.exports = uploader;
+module.exports = uploaderCloudinary;
