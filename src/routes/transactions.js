@@ -10,5 +10,10 @@ transactions.post(
   allowedRoles(1),
   transactionsControllers.createTransaction
 );
-
+transactions.get(
+  "/history/",
+  isLogin(),
+  allowedRoles(1, 2),
+  transactionsControllers.userTransactions
+);
 module.exports = transactions;

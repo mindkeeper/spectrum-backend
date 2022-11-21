@@ -1,5 +1,71 @@
 const db = require("../config/postgre");
 
+const userTransactions = (req) => {
+  return new Promise((resolve, reject) => {
+    const userId = req.userPayload.user_id;
+    const { page, limit } = req.query;
+
+    const sqlCount = `select count(ti.id) from transactions_items ti join transactions t on t.id = ti.transaction_id join users u on u.id = t.user_id where u.id = $1`;
+
+    db.query(sqlCount, [userId], (err, result) => {
+      if (err) {
+        console.log(err);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (result.rows.length === 0)
+        return reject({ status: 404, msg: "Sorry. we cant find anything" });
+
+      let link = "";
+      const totalData = parseInt(result.rows[0].count);
+      const sqlLimit = !limit ? 5 : parseInt(limit);
+      const sqlOffset = !page || page == 1 ? 0 : parseInt(page - 1) * sqlLimit;
+      const currentPage = !page ? 1 : parseInt(page);
+      const totalPage =
+        totalData < sqlLimit ? 1 : Math.ceil(totalData / sqlLimit);
+      const prev =
+        currentPage === 1
+          ? null
+          : link + `page=${currentPage - 1}&limit=${sqlLimit}`;
+      const next =
+        currentPage === totalPage
+          ? null
+          : link + `page=${currentPage + 1}&limit=${sqlLimit}`;
+      const meta = {
+        page: parseInt(currentPage),
+        totalPage: parseInt(totalPage),
+        totalData: parseInt(totalData),
+        prev,
+        next,
+      };
+      const sqlSelect = `select t.id, p.id as product_id, p.product_name, p.price, ti.qty, ti.total as subtotal, 
+      (select images from product_images pi2 where pi2.product_id = p.id limit 1) as image,
+      s.status, s2.status as shipment_status, p2."method" as payment_method
+      from transactions t 
+      right join transactions_items ti on t.id = ti.transaction_id
+      join products p on p.id = ti.product_id
+      join status s on s.id = t.status_id
+      join shipments s2 on s2.id = t.shipment_id
+      join payments p2 on p2.id = t.payment_id 
+      where t.deleted_at is null and  t.user_id = $1 limit $2 offset $3`;
+      console.log(sqlLimit, sqlOffset);
+      db.query(sqlSelect, [userId, sqlLimit, sqlOffset], (err, result) => {
+        if (err) {
+          console.log(err);
+          return reject({ status: 500, msg: "Internal Server Error" });
+        }
+        return resolve({
+          status: 200,
+          msg: "Heres your history",
+          data: result.rows,
+          meta,
+        });
+      });
+
+      // return resolve({ status: 200, msg: "", data: totalData });
+    });
+  });
+};
+
 const createTransaction = (req) => {
   return new Promise((resolve, reject) => {
     const {
@@ -54,20 +120,26 @@ const createTransaction = (req) => {
       }
 
       const prepareUpdateStockValues = [];
-      const productWithPrice = productList.map((e, idx) => {
-        let price = result.rows[idx].price;
-        if (result.rows[idx].stock < e.qty)
+      const productWithPrice = [];
+
+      for (let i = 0; i < productList.length; i++) {
+        let price = result.rows[i].price;
+        if (result.rows[i].stock < productList[i].qty)
           return reject({
             status: 400,
-            msg: `Sorry the stock of this ${result.rows[idx].product_name} doesnt meet the quantity you wanted :(`,
+            msg: `Sorry the stock of this ${result.rows[i].product_name} doesnt meet the quantity you wanted :(`,
           });
         prepareUpdateStockValues.push(
-          parseInt(e.productId),
-          parseInt(result.rows[idx].stock - e.qty)
+          parseInt(price),
+          parseInt(result.rows[i].stock - productList[i].qty)
         );
-        return (e = { ...e, total: price * e.qty });
-      });
+        productWithPrice.push({
+          ...productList[i],
+          total: price * productList[i].qty,
+        });
+      }
 
+      console.log(prepareUpdateStockValues, productWithPrice);
       db.query(transactionQuery, transactionValues, (error, result) => {
         if (error) {
           console.log(error);
@@ -150,6 +222,7 @@ const createTransaction = (req) => {
 
 const transactionsRepo = {
   createTransaction,
+  userTransactions,
 };
 
 module.exports = transactionsRepo;
