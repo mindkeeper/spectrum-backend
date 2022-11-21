@@ -86,9 +86,35 @@ const getProfile = (id, role) => {
   });
 };
 
+const editPassword = (password, id) => {
+  return new Promise((resolve, reject) => {
+    const timeStamp = Date.now() / 1000;
+    bcrypt.hash(password, 10, (error, hashedPwd) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      const query =
+        "update users set password = $1, updated_at = to_timestamp($2) where id = $3 returning password";
+      postgreDB.query(query, [hashedPwd, timeStamp, id], (error, result) => {
+        if(error) {
+          console.log(error);
+          return reject(error)
+        }
+        return resolve({
+          status: 201 ,
+          msg: "password has been changed",
+          data: result.rows
+        })
+      });
+    });
+  });
+};
+
 const usersRepo = {
   register,
   getProfile,
+  editPassword
 };
 
 module.exports = usersRepo;
