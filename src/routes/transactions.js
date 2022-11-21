@@ -13,7 +13,16 @@ transactions.post(
 transactions.get(
   "/history/",
   isLogin(),
-  allowedRoles(1, 2),
+  allowedRoles(2),
   transactionsControllers.userTransactions
+);
+
+transactions.patch("/status/:id");
+
+transactions.patch(
+  "/cancel/:id",
+  isLogin(),
+  allowedRoles(1),
+  transactionsControllers.cancelTransactions
 );
 module.exports = transactions;

@@ -216,9 +216,58 @@ const createTransaction = (req) => {
   });
 };
 
+const updateStatusTrans = (req) => {
+  return new Promise((resolve, reject) => {
+    const { status } = req.body;
+    const { id } = req.params.id;
+    const timeStamp = Date.now() / 1000;
+    const query =
+      "update transactions set status_id = $1, updated_at =  to_timestamp($2) where id = $3 returning *";
+    db.query(query, [status, timeStamp, id], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      return resolve({
+        status: 200,
+        msg: "Transaction updated successfully",
+        data: result.rows[0],
+      });
+    });
+  });
+};
+
+const cancelTransactions = (req) => {
+  return new Promise((resolve, reject) => {
+    const id = req.params.id;
+    const status = 3;
+    const timeStamp = Date.now() / 1000;
+    const query =
+      "update transactions set status_id = $1, updated_at =  to_timestamp($2) where id = $3 and status_id != 4 and status_id != 5 returning *";
+    db.query(query, [status, timeStamp, id], (error, result) => {
+      if (error) {
+        console.log(error);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      if (result.rows.length === 0)
+        return reject({
+          status: 400,
+          msg: "You cant cancel order when its already on transit or arrived",
+        });
+      return resolve({
+        status: 200,
+        msg: "Transaction updated successfully",
+        data: result.rows[0],
+      });
+    });
+  });
+};
+
 const transactionsRepo = {
   createTransaction,
   userTransactions,
+  updateStatusTrans,
+  cancelTransactions,
 };
 
 module.exports = transactionsRepo;
