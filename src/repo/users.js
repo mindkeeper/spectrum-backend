@@ -87,24 +87,44 @@ const getProfile = (id, role) => {
   });
 };
 
-const editPassword = (new_password, id) => {
+const editPassword = (new_password, old_password, id) => {
   return new Promise((resolve, reject) => {
-    bcrypt.hash(new_password, 10, (error, hash) => {
-      if (error) {
-        console.log(error);
-        return reject({ status: 500, msg: "internal server error" });
+    const getPwdQuery = "select password from users where id = $1";
+    postgreDB.query(getPwdQuery, id, (err, response) => {
+      if (err) {
+        console.log(err);
+        return reject({ err });
       }
-      const timeStamp = Date.now() / 1000;
-      const query =
-        "update users set password = $1,updated_at = to_timestamp($2) where id = $3";
-      postgreDB.query(query, [hash, timeStamp, id], (error, result) => {
-        if (error) {
-          return reject({ status: 500, msg: "internal server error" });
+      const hashedPwd = response.rows[0].password;
+      bcrypt.compare(old_password, hashedPwd, (err, isSame) => {
+        if (err) {
+          console.log(err);
+          return reject({ err });
         }
-        return resolve({
-          status: 201,
-          msg: "password has been changed",
-          data: result.rows,
+        if (!isSame) {
+          return reject({
+            err: new Error("old password is wrong"),
+            statusCode: 401,
+          });
+        }
+        bcrypt.hash(new_password, 10, (error, hash) => {
+          if (error) {
+            console.log(error);
+            return reject({ status: 500, msg: "internal server error" });
+          }
+          const timeStamp = Date.now() / 1000;
+          const query =
+            "update users set password = $1,updated_at = to_timestamp($2) where id = $3";
+          postgreDB.query(query, [hash, timeStamp, id], (error, result) => {
+            if (error) {
+              return reject({ status: 500, msg: "internal server error" });
+            }
+            return resolve({
+              status: 201,
+              msg: "password has been changed",
+              data: result.rows,
+            });
+          });
         });
       });
     });
@@ -114,7 +134,7 @@ const editPassword = (new_password, id) => {
 const usersRepo = {
   register,
   getProfile,
-  editPassword
+  editPassword,
 };
 
 module.exports = usersRepo;
