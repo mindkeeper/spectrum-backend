@@ -44,7 +44,7 @@ const login = (body) => {
             }
             const inserTokenQuery =
               "insert into whitelist_token (token) values ($1) ";
-            postgreDb.query(inserTokenQuery, [token], (error, result) => {
+            postgreDb.query(inserTokenQuery, [token], (error) => {
               if (error) {
                 console.log(error);
                 return reject({ status: 500, msg: "Internal Server Error" });
@@ -117,31 +117,27 @@ const resetPassword = (body) => {
               console.log(error);
               return reject({ status: 500, msg: "Internal Server Error" });
             }
-            postgreDb.query(
-              query,
-              [hashedPwd, timeStamp, email],
-              (error, result) => {
-                if (error) {
-                  console.log(error);
-                  return reject({ status: 500, msg: "Internal Server Error" });
-                }
-                client
-                  .del(email)
-                  .then(() =>
-                    resolve({
-                      status: 200,
-                      msg: "Your password has been changed, plase login again!",
-                    })
-                  )
-                  .catch((error) => {
-                    console.log(error);
-                    return reject({
-                      status: 500,
-                      msg: "Internal Server Error",
-                    });
-                  });
+            postgreDb.query(query, [hashedPwd, timeStamp, email], (error) => {
+              if (error) {
+                console.log(error);
+                return reject({ status: 500, msg: "Internal Server Error" });
               }
-            );
+              client
+                .del(email)
+                .then(() =>
+                  resolve({
+                    status: 200,
+                    msg: "Your password has been changed, plase login again!",
+                  })
+                )
+                .catch((error) => {
+                  console.log(error);
+                  return reject({
+                    status: 500,
+                    msg: "Internal Server Error",
+                  });
+                });
+            });
           });
         })
         .catch((error) => {
