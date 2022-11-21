@@ -17,6 +17,7 @@ const uploaderCloudinary = require("../middleware/cloudinary");
 users.post("/register", register);
 
 users.get("/profile", isLogin(), Profile);
+
 users.patch(
   "/profile/edit",
   isLogin(),

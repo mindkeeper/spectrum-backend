@@ -130,10 +130,55 @@ const editPassword = (new_password, old_password, id) => {
   });
 };
 
+const editProfile = (id, role, body, file) => {
+  return new Promise((resolve, reject) => {
+    const timeStamp = Date.now() / 1000;
+    const values = [];
+    let query = "";
+    if (parseInt(role) === 1) query = "update customers set ";
+    if (parseInt(role) === 2) query = "update sellers set ";
+
+    let imageUrl = "";
+    if (file) {
+      imageUrl = `${file.url} `;
+      if (Object.keys(body).length > 0) {
+        query += `image = '${imageUrl}', `;
+      }
+      if (Object.keys(body).length === 0) {
+        query += `image = '${imageUrl}', updated_at = to_timestamp($1) where user_id = $2 returning *`;
+        values.push(timeStamp, id);
+      }
+    }
+
+    Object.keys(body).forEach((key, idx, array) => {
+      if (idx === array.length - 1) {
+        query += ` ${key} = $${idx + 1} where user_id = $${
+          idx + 2
+        } returning *`;
+        values.push(body[key], id);
+        return;
+      }
+      query += `${key} = $${idx + 1},`;
+      values.push(body[key]);
+    });
+    postgreDB.query(query, values, (err, result) => {
+      if (err) {
+        console.log(query, values, file);
+        return reject({ status: 500, msg: "Internal Server Error" });
+      }
+      return resolve({
+        status: 200,
+        msg: `${result.rows[0].display_name} Your profile has been updated`,
+        data: result.rows[0],
+      });
+    });
+  });
+};
 const usersRepo = {
   register,
   getProfile,
   editPassword,
+  editProfile,
 };
 
 module.exports = usersRepo;
