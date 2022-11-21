@@ -357,7 +357,7 @@ const getRelatedProducts = (req) => {
         let relatedQuery = `select distinct p.id, p.product_name, p.price, (select pi2.images from product_images pi2 where pi2.product_id = $1 limit 1) from products p
         join product_categories pc on pc.product_id = p.id
         join categories c on c.id  = pc.category_id
-        where p.id != $1 and p.deleted_at is null and p.brand_id = $2 and c.id in (`;
+        where p.id != $1 and p.deleted_at is null and p.stock !=0 and p.brand_id = $2 and c.id in (`;
 
         categories.forEach((e, index, array) => {
           if (index === array.length - 1) {
