@@ -7,6 +7,7 @@ const createProduct = (req) => {
     const timeStamp = Date.now() / 1000;
     // const categories = body.categories;
     const userId = userPayload.user_id;
+    console.log(body);
     const {
       product_name,
       price,
