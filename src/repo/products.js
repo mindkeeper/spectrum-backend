@@ -75,7 +75,9 @@ const createProduct = (req) => {
 
         result.rows.forEach((image) => imagreResult.push(image.images));
         createdProduct = { ...createdProduct, image: imagreResult };
-        const categories = [JSON.parse(body.categories)];
+        const categories = body.categories
+          .split(",")
+          .map((num) => parseInt(num, 10));
         console.log(categories);
         const prepareCategoryValues = [];
         let categoryValues = "values";
