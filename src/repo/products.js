@@ -75,7 +75,7 @@ const createProduct = (req) => {
 
         result.rows.forEach((image) => imagreResult.push(image.images));
         createdProduct = { ...createdProduct, image: imagreResult };
-        const categories = [JSON.parse(body.categories)];
+        const categories = [body.categories];
         console.log(categories);
         const prepareCategoryValues = [];
         let categoryValues = "values";
