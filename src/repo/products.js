@@ -17,7 +17,7 @@ const createProduct = (req) => {
       description,
       // user_id,
     } = body;
-
+    console.log(body.categories);
     // if (!images)
     //   return reject({ status: 500, msg: "Field Image cant be empty" });
 
