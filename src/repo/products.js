@@ -36,11 +36,14 @@ const createProduct = (req) => {
       timeStamp,
       timeStamp,
     ];
+    console.log(addProductValues);
+    console.log("add product started");
     db.query(addProductQuery, addProductValues, (error, result) => {
       if (error) {
         console.log(error);
         return reject({ status: 500, msg: "Internal Server Error" });
       }
+      console.log("success");
       let createdProduct = { ...result.rows[0] };
       const productId = result.rows[0].id;
       let imageValues = "values";
@@ -60,11 +63,13 @@ const createProduct = (req) => {
         prepareImageValues.push(productId, image, timeStamp, timeStamp);
       });
       const addImageQuery = `insert into product_images(product_id, images, created_at, updated_at) ${imageValues} returning *`;
+      console.log("add image started");
       db.query(addImageQuery, prepareImageValues, (error, result) => {
         if (error) {
           console.log(error);
           return reject({ status: 500, msg: "Internal Server" });
         }
+        console.log("success");
         const imagreResult = [];
 
         result.rows.forEach((image) => imagreResult.push(image.images));
@@ -94,6 +99,7 @@ const createProduct = (req) => {
             timeStamp
           );
         });
+        console.log("add category started");
         const insertCategotyQuery = `insert into product_categories(product_id, category_id, created_at, updated_at) ${categoryValues} returning *`;
         db.query(
           insertCategotyQuery,
@@ -103,7 +109,7 @@ const createProduct = (req) => {
               console.log(error);
               return reject({ status: 500, msg: "Internal Server Error" });
             }
-
+            console.log("success");
             const categoryResult = [];
             result.rows.forEach((category) =>
               categoryResult.push(category.category_id)
