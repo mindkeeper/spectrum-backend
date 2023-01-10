@@ -18,7 +18,7 @@ const createProduct = (req) => {
       description,
       // user_id,
     } = body;
-    console.log(body.categories);
+    // console.log(body.categories);
     // if (!images)
     //   return reject({ status: 500, msg: "Field Image cant be empty" });
 
@@ -75,7 +75,8 @@ const createProduct = (req) => {
 
         result.rows.forEach((image) => imagreResult.push(image.images));
         createdProduct = { ...createdProduct, image: imagreResult };
-        const categories = JSON.parse(body.categories);
+        const categories = [...body.categories];
+        console.log(categories);
         const prepareCategoryValues = [];
         let categoryValues = "values";
 
